@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Menu, Database, Download, Upload } from 'lucide-react';
-import { AppState, AssessmentType, Gender, Student, ClassGroup, Assessment, Grade } from './types';
+import { AppState, AssessmentType, Gender, Student, ClassGroup, Assessment, Grade, ForumPost } from './types';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ClassManager from './components/ClassManager';
@@ -11,14 +11,15 @@ import JournalManager from './components/JournalManager';
 import QuestionnaireManager from './components/QuestionnaireManager';
 import AttendanceManager from './components/AttendanceManager';
 import ExamManager from './components/ExamManager';
+import ForumManager from './components/ForumManager';
 import LandingPage from './components/LandingPage';
 import { storageService } from './services/storageService';
 
 // --- DATA GENERATOR FOR REALISTIC PREVIEW ---
 const generateDummyData = (): AppState => {
   const classes: ClassGroup[] = [
-    { id: 'c1', name: 'X IPA 1', gradeLevel: 10, year: '2023/2024' },
-    { id: 'c2', name: 'X IPA 2', gradeLevel: 10, year: '2023/2024' }
+    { id: 'c1', name: 'X Tahfidz 1', gradeLevel: 10, year: '2023/2024' },
+    { id: 'c2', name: 'X Sains 2', gradeLevel: 10, year: '2023/2024' }
   ];
 
   const students: Student[] = [];
@@ -29,13 +30,11 @@ const generateDummyData = (): AppState => {
   const r = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
   classes.forEach(cls => {
-    // 1. Generate 25 Students per class
+    // 1. Generate 25 Students per class (Only Females for Pesantren Putri)
     for (let i = 1; i <= 25; i++) {
-      const gender = Math.random() > 0.5 ? Gender.L : Gender.P;
-      const firstNames = gender === Gender.L 
-        ? ['Ahmad', 'Budi', 'Candra', 'Dedi', 'Eko', 'Fajar', 'Gilang', 'Hadi', 'Indra', 'Joko'] 
-        : ['Ayu', 'Bunga', 'Citra', 'Dina', 'Eka', 'Fitri', 'Gita', 'Hana', 'Indah', 'Jelita'];
-      const lastNames = ['Santoso', 'Pratama', 'Wijaya', 'Kurniawan', 'Saputra', 'Hidayat', 'Nugroho', 'Wibowo', 'Susanto', 'Purnomo'];
+      const gender = Gender.P; // All female
+      const firstNames = ['Aisyah', 'Fatimah', 'Zahra', 'Khadijah', 'Maryam', 'Hafsah', 'Nadia', 'Siti', 'Nurul', 'Wardah'];
+      const lastNames = ['Azzahra', 'Humaira', 'Salsabila', 'Fitri', 'Hidayah', 'Rahma', 'Khoirunnisa', 'Amalia', 'Putri', 'Shalihah'];
       
       students.push({
         id: `${cls.id}_s${i}`,
@@ -49,11 +48,11 @@ const generateDummyData = (): AppState => {
 
     // 2. Generate Assessments
     const subjects = [
-      { t: AssessmentType.PH, title: 'PH 1 - Eksponen', w: 10 },
-      { t: AssessmentType.PH, title: 'PH 2 - Logaritma', w: 10 },
-      { t: AssessmentType.TUGAS, title: 'Tugas Proyek Video', w: 20 },
-      { t: AssessmentType.PTS, title: 'PTS Ganjil', w: 25 },
-      { t: AssessmentType.PH, title: 'PH 3 - Vektor', w: 10 },
+      { t: AssessmentType.PH, title: 'PH 1 - Tajwid', w: 10 },
+      { t: AssessmentType.PH, title: 'PH 2 - Fiqih Wanita', w: 10 },
+      { t: AssessmentType.TUGAS, title: 'Hafalan Juz 30', w: 20 },
+      { t: AssessmentType.PTS, title: 'PTS Ganjil (Kitab)', w: 25 },
+      { t: AssessmentType.PH, title: 'PH 3 - Bahasa Arab', w: 10 },
       { t: AssessmentType.PAS, title: 'PAS Ganjil', w: 25 },
     ];
 
@@ -73,11 +72,11 @@ const generateDummyData = (): AppState => {
       // Simulate class performance trends (some students smarter)
       students.filter(s => s.classId === cls.id).forEach((s, sIdx) => {
         // Base ability of student (random but consistent)
-        const baseAbility = 60 + (sIdx % 5) * 8; // Ranges 60-92
-        const variance = r(-10, 10);
+        const baseAbility = 65 + (sIdx % 5) * 7; // Ranges 
+        const variance = r(-5, 10);
         let score = baseAbility + variance;
         if (score > 100) score = 100;
-        if (score < 40) score = 40;
+        if (score < 50) score = 50;
 
         grades.push({
           assessmentId: aId,
@@ -87,6 +86,30 @@ const generateDummyData = (): AppState => {
       });
     });
   });
+
+  const forumPosts: ForumPost[] = [
+    {
+      id: '1',
+      author: 'Ustadzah Fatimah',
+      role: 'TEACHER',
+      content: 'Assalamu\'alaikum Santriwati Shalihah. Mengingatkan untuk setoran hafalan Juz 30 ba\'da Ashar di Masjid Khadijah. Tolong perhatikan makhrajul hurufnya ya.',
+      date: '2023-10-24T08:30:00',
+      likes: 42,
+      comments: [
+        { id: 'c1', author: 'Aisyah Humaira (Santri)', role: 'STUDENT', content: 'Wa\'alaikumussalam Ustadzah, insyaAllah siap.', date: '2023-10-24T09:00:00' },
+        { id: 'c2', author: 'Fatimah Az-Zahra (Santri)', role: 'STUDENT', content: 'Afwan Ustadzah, saya izin terlambat sebentar karena piket.', date: '2023-10-24T09:15:00' }
+      ]
+    },
+    {
+      id: '2',
+      author: 'Nadia (Ketua OSIS)',
+      role: 'STUDENT',
+      content: 'Teman-teman, untuk kajian Kitab Ta\'lim Muta\'allim besok, jangan lupa membawa buku catatan khusus Adab ya. Kita akan bahas bab "Menghormati Guru".',
+      date: '2023-10-23T14:00:00',
+      likes: 28,
+      comments: []
+    }
+  ];
 
   return {
     classes,
@@ -99,7 +122,7 @@ const generateDummyData = (): AppState => {
         {
           id: 'q1',
           title: 'Tes Gaya Belajar (V-A-K)',
-          description: 'Mengetahui kecenderungan gaya belajar Visual, Auditory, atau Kinestetik siswa.',
+          description: 'Mengetahui kecenderungan gaya belajar Visual, Auditory, atau Kinestetik santriwati.',
           questions: [
             { id: 'q1_1', text: 'Saya lebih suka melihat gambar/diagram daripada mendengarkan penjelasan.', category: 'Visual' },
             { id: 'q1_2', text: 'Saya mudah mengingat apa yang saya dengar di kelas.', category: 'Auditory' },
@@ -109,10 +132,11 @@ const generateDummyData = (): AppState => {
     ],
     questionnaireResponses: [],
     examPackages: [],
+    forumPosts,
     settings: {
       kkm: 75,
-      schoolName: 'SMA NEGERI 1 INDONESIA MAJU',
-      teacherName: 'Budi Guru, S.Pd.'
+      schoolName: 'DIGISS Boarding School',
+      teacherName: 'Ustadzah Aminah, S.Pd.'
     }
   };
 };
@@ -133,13 +157,17 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedData = storageService.load();
     if (savedData) {
-      // Ensure backward compatibility structure
-      if (!savedData.journals) savedData.journals = [];
-      if (!savedData.dailyAttendance) savedData.dailyAttendance = [];
-      if (!savedData.questionnaires) savedData.questionnaires = INITIAL_DATA.questionnaires;
-      if (!savedData.questionnaireResponses) savedData.questionnaireResponses = [];
-      if (!savedData.examPackages) savedData.examPackages = [];
-      setData(savedData);
+      // Data Migration / Filling missing fields for new features
+      const mergedData = { ...INITIAL_DATA, ...savedData };
+      // Specifically ensure arrays are present if missing in saved data
+      if (!savedData.journals) mergedData.journals = [];
+      if (!savedData.dailyAttendance) mergedData.dailyAttendance = [];
+      if (!savedData.questionnaires) mergedData.questionnaires = INITIAL_DATA.questionnaires;
+      if (!savedData.questionnaireResponses) mergedData.questionnaireResponses = [];
+      if (!savedData.examPackages) mergedData.examPackages = [];
+      if (!savedData.forumPosts || savedData.forumPosts.length === 0) mergedData.forumPosts = INITIAL_DATA.forumPosts;
+      
+      setData(mergedData);
     }
     setIsLoaded(true);
   }, []);
@@ -192,6 +220,8 @@ const App: React.FC = () => {
         return <AssessmentManager data={data} onUpdate={setData} />;
       case 'exams': 
         return <ExamManager data={data} onUpdate={setData} />;
+      case 'forum':
+        return <ForumManager data={data} onUpdate={setData} />;
       case 'talents':
         return <QuestionnaireManager data={data} onUpdate={setData} />;
       case 'reports':
@@ -264,7 +294,7 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="text-center text-xs text-gray-400 mt-10">
-                    GuruPintar AI v1.6 - Auth System Enabled
+                    DIGISS Academic System v2.0
                 </div>
             </div>
         );
@@ -276,7 +306,7 @@ const App: React.FC = () => {
   // --- RENDER ---
 
   if (!isAuthenticated) {
-    return <LandingPage data={data} onLogin={handleLogin} />;
+    return <LandingPage data={data} onLogin={handleLogin} onUpdate={setData} />;
   }
 
   return (
@@ -291,14 +321,19 @@ const App: React.FC = () => {
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Mobile Header */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:hidden flex-shrink-0 z-10">
-          <button 
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-          >
-            <Menu size={24} />
-          </button>
-          <span className="ml-3 font-semibold text-gray-800">GuruPintar</span>
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:hidden flex-shrink-0 z-10 justify-between">
+          <div className="flex items-center">
+             <button 
+               onClick={() => setIsSidebarOpen(true)}
+               className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg mr-2"
+             >
+               <Menu size={24} />
+             </button>
+             <span className="font-semibold text-gray-800">Dashboard</span>
+          </div>
+          <div className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">
+             DIGISS
+          </div>
         </header>
 
         {/* Content Area */}

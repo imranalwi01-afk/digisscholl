@@ -165,7 +165,8 @@ export interface AppState {
   dailyAttendance: DailyAttendance[];
   questionnaires: Questionnaire[];
   questionnaireResponses: QuestionnaireResponse[];
-  examPackages: ExamPackage[]; // New
+  examPackages: ExamPackage[];
+  forumPosts: ForumPost[]; // Add this
   settings: {
     kkm: number;
     schoolName: string;
